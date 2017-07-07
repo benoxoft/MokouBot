@@ -9,11 +9,11 @@ chatbot = ChatBot(
     trainer='chatterbot.trainers.ListTrainer',
     storage_adapter="chatterbot.storage.MongoDatabaseAdapter"
 )
-#chatbot.storage.drop()
+chatbot.storage.drop()
 
 BASE_THREADS_URL = "http://a.4cdn.org/{board}/threads.json"
 BASE_THREAD_CONTENT_URL = "http://a.4cdn.org/{board}/thread/{number}.json"
-BOARDS = ["a", "b", "g", "soc", "ck", "fit", "co", "v"]
+BOARDS = ["a", "b", "g", "soc", "ck", "fit", "co", "v", "r9k", "s4s"]
 
 
 # https://stackoverflow.com/questions/753052/strip-html-from-strings-in-python
@@ -30,7 +30,7 @@ class MLStripper(HTMLParser):
 
 def strip_tags(html):
     s = MLStripper()
-    s.feed(html)
+    s.feed(html.replace("<br>", " ").strip())
     return s.get_data()
 
 
@@ -96,27 +96,31 @@ def get_messages_in_thread(board, thread):
 
 
 def learn(message, response):
-    if len(message) > 256 or len(response) > 256 or len(message) == 0 or len(response) == 0:
+    if len(message) > 256 or len(response) > 256 or len(message) < 4 or len(response) < 4:
         return
     print('learning', message, response)
     chatbot.train([message, response])
 
-for board in BOARDS:
-    time.sleep(1)
-    threads = get_board_threads(board)
-    time.sleep(1)
 
-    for thread in threads:
-        start_time = time.time()
-        print('Reading thread', thread, 'from', board)
-        messages = get_messages_in_thread(board, thread)
-        for id in messages.keys():
-            message = messages[id]
-            if len(message['replies']) > 0:
-                for reply in message['replies']:
-                    learn(message['com'], reply)
-        sleep_time = 1.5 - (time.time() - start_time)
-        if sleep_time > 0:
-            print('Sleeping', sleep_time)
-            time.sleep(sleep_time)
+def main():
+    for board in BOARDS:
+        time.sleep(1)
+        threads = get_board_threads(board)
+        time.sleep(1)
 
+        for thread in threads:
+            start_time = time.time()
+            print('Reading thread', thread, 'from', board)
+            messages = get_messages_in_thread(board, thread)
+            for id in messages.keys():
+                message = messages[id]
+                if len(message['replies']) > 0:
+                    for reply in message['replies']:
+                        learn(message['com'], reply)
+            sleep_time = 1.5 - (time.time() - start_time)
+            if sleep_time > 0:
+                print('Sleeping', sleep_time)
+                time.sleep(sleep_time)
+
+if __name__ == '__main__':
+    main()
