@@ -99,3 +99,9 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+images
+sfw_data.json
+nsfw_data.json
+.idea
+API_KEY.txt
