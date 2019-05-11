@@ -7,6 +7,7 @@ from html.parser import HTMLParser
 
 from config import \
     chatbot, \
+    trainer, \
     SFW_BOARDS, \
     NSFW_BOARDS, \
     SLEEP_TIME_4CHAN, \
@@ -27,10 +28,13 @@ class MLStripper(HTMLParser):
         self.strict = False
         self.convert_charrefs= True
         self.fed = []
+
     def handle_data(self, d):
         self.fed.append(d)
+
     def get_data(self):
         return ''.join(self.fed)
+
 
 def strip_tags(html):
     s = MLStripper()
@@ -95,7 +99,7 @@ def get_messages_in_thread(board, thread):
     for no, com, filename in get_thread_content(board, thread):
         parsed_com = parse_post(com)
         if parsed_com:
-            messages[str(no)] = {'com': strip_tags(parsed_com[0][1]), 'replies':[], 'filename': filename}
+            messages[str(no)] = {'com': strip_tags(parsed_com[0][1]), 'replies': [], 'filename': filename}
         else:
             messages[str(no)] = {'com': strip_tags(com), 'replies': [], 'filename': filename}
 
@@ -117,7 +121,7 @@ def learn(message, msg_filename, response, filename):
     if filename:
         response += ' <img>' + filename
 
-    chatbot.train([message, response])
+    trainer.train([message, response])
 
 
 def create_training_dataset(boards, save_images):
@@ -143,9 +147,9 @@ def create_training_dataset(boards, save_images):
                     continue
                 for reply, filename in message['replies']:
                     if (len(message['com']) > MAX_MESSAGE_LENGTH or
-                                len(reply) > MAX_REPLY_LENGTH or
-                                len(message['com']) < MIN_MESSAGE_LENGTH or
-                                len(reply) < MIN_REPLY_LENGTH):
+                        len(reply) > MAX_REPLY_LENGTH or
+                        len(message['com']) < MIN_MESSAGE_LENGTH or
+                            len(reply) < MIN_REPLY_LENGTH):
                         continue
                     training_data.append([message['com'], message['filename'], reply, filename])
 
@@ -167,10 +171,12 @@ def learn_from_dataset(training_data):
 def main():
     sfw_data = create_training_dataset(SFW_BOARDS, True)
     with open('sfw_data.json', 'w') as datafile:
+        #sfw_data = json.load(datafile)
         json.dump(sfw_data, datafile)
 
     nsfw_data = create_training_dataset(NSFW_BOARDS, False)
     with open('nsfw_data.json', 'w') as datafile:
+        #nsfw_data = json.load(datafile)
         json.dump(nsfw_data, datafile)
 
     chatbot.storage.drop()

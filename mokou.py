@@ -32,17 +32,17 @@ async def reply_to_message(message):
     await asyncio.sleep(WAIT_TIME_BEFORE_TYPING)
     while not response_gen.done():
         await asyncio.sleep(WAIT_TIME_RESPONSE_READY)
-        await client.send_typing(message.channel)
+        await message.channel.trigger_typing()
     response = response_gen.result()
     print("Sending", response)
     filename = ''
     if ' <img>' in str(response):
         response, filename = str(response).split(' <img>')
-    await client.send_message(message.channel, message.author.mention + ' ' + str(response))
+    await message.channel.send(message.author.mention + ' ' + str(response))
     print('file:', filename)
     if filename and os.path.exists(os.path.join('images', filename)):
         with open(os.path.join('images', filename), 'rb') as f:
-            await client.send_file(message.channel, f)
+            await message.channel.send(f)
 
 
 @client.event

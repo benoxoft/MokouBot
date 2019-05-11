@@ -1,13 +1,12 @@
 import os
 
 from chatterbot import ChatBot
+from chatterbot.trainers import ListTrainer
 
 # configure how the bot train and retrieve responses
-chatbot = ChatBot(
-    'Mokou',
-    trainer='chatterbot.trainers.ListTrainer',
-    storage_adapter='chatterbot.storage.MongoDatabaseAdapter'
-)
+chatbot = ChatBot('Mokou', storage_adapter='chatterbot.storage.MongoDatabaseAdapter')
+
+trainer = ListTrainer(chatbot)
 
 #
 PROCESS_POOL_EXECUTOR_COUNT = 3
@@ -15,8 +14,8 @@ WAIT_TIME_BEFORE_TYPING = 2
 WAIT_TIME_RESPONSE_READY = 0.3
 
 # Images are downloaded from SFW boards. Images are not downloaded from NSFW boards
-SFW_BOARDS = ['jp', 'a', 'v',]
-NSFW_BOARDS = ['b', 'pol']
+SFW_BOARDS = []
+NSFW_BOARDS = ['b', 'pol', 's4s', 'soc', 'int', 'r9k', 'vip', 'qa', 'lgbt', 'news', 'out']
 
 # Messages that aren't in the corresponding length will be discarded from the training data
 MIN_MESSAGE_LENGTH = 4
